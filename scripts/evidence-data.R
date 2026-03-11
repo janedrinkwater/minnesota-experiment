@@ -30,6 +30,6 @@ evidence <- here(GOOGLE_DRIVE, "Shared drives", "evidence-experiment", "economis
   pivot_longer(cols = all_of(vars), #pivoting longer for easier analysis
                names_to = "question",
                values_to = "response") |> 
-  mutate(question = fct_relevel(question, rev(vars))) #making sure the questions are in the right order
+  mutate(question = fct_relevel(question, rev(vars))) 
 
 write_rds(evidence, here("data", "evidence-cleaned.rds"))
