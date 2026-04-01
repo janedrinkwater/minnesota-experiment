@@ -4,12 +4,21 @@ library(haven)
 library(broom)
 library(nestedLogit)
 
+test_data <- evidence |> filter(question == unique(evidence$question)[1])
+
+# Try fitting with weights
+test_model <- nestedLogit(
+  response ~ ICE_Video,
+  dichotomies = comparisons,
+  data = test_data,
+  weights = test_data$weight)
+
 evidence <- here("data", "evidence-cleaned.rds") |> 
   read_rds() |> 
   mutate(response = as_factor(response),
          response = factor(response, 
                            levels = c("No", "Yes", "Not sure"))) |>
-  filter(complete.cases(response, ICE_Video))
+  filter(complete.cases(response, ICE_Video, weight))
 
 comparisons <- logits(certainty = dichotomy("Not sure", 
                                             Sure=c("No", "Yes")),
@@ -19,10 +28,13 @@ models <- evidence |>
   group_by(question) |>
   nest() |>
   mutate(
-    model = map(data, ~nestedLogit(
-      response ~ ICE_Video,
-      dichotomies = comparisons,
-      data = .x)))
+    model = map(data, function(df) {
+      nestedLogit(
+        response ~ ICE_Video,
+        dichotomies = comparisons,
+        data = df,
+        weights = df$weight)
+    }))
 
 # Tidy coefficients with standard errors
 tidy_coefs <- models |>
@@ -43,7 +55,7 @@ treatment_effects <- tidy_coefs |>
                                                  "good_ice_injured", 
                                                  "good_ice_professional"), "Factual", "Policy"))
 
-ggplot(treatment_effects, aes(x = estimate, y = reorder(question, -estimate * (response == "direction")), , color = response, shape = question_type)) +
+ggplot(treatment_effects, aes(x = estimate, y = reorder(question, estimate * (response == "certainty")), , color = response, shape = question_type)) +
   geom_point(size = 2,
              position = position_dodge(width = 0.6)) +
   geom_errorbar(aes(xmin = lower, xmax = upper), 

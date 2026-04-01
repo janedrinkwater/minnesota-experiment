@@ -33,3 +33,16 @@ evidence <- here(GOOGLE_DRIVE, "Shared drives", "evidence-experiment", "economis
   mutate(question = fct_relevel(question, rev(vars))) 
 
 write_rds(evidence, here("data", "evidence-cleaned.rds"))
+
+#randomization/control check
+check <- evidence |> 
+  mutate(rep = case_when(pid7_baseline %in% c(1, 2, 3) ~ "Dem",
+                         pid7_baseline%in% c(5, 6, 7) ~ "Rep"),
+         saw= as.numeric(saw_ice_video == 1))
+
+#how well did we randomize for saw_ice_video? Significant diff. in exposure to the video (Treatment 79%, control 73%)?
+t.test(check$saw ~ check$ICE_Video)
+#are saw_ice_video and party correlated? Significant diff. in exposure to video (Dem 81%, Rep 74%)
+t.test(check$saw ~ check$rep)
+#how well did we randomize for party? Sliiiightly significant difference (Dem 47% treated, Rep 49% treated). Would not worry about this one.
+t.test(check$ICE_Video ~ check$rep)
