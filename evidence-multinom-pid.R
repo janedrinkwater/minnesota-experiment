@@ -2,8 +2,6 @@ library(tidyverse)
 library(haven)
 library(here)
 library(labelled)
-library(MASS)
-library(brant)
 library(broom)
 
 sav <- here("data", "evidence-sav.rds") |> 
