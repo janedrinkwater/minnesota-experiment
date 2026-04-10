@@ -47,8 +47,9 @@ sav <- sav |>
       pid7_baseline, 
         "Dem" = c("Strong Democrat", "Not very strong Democrat", "Lean Democrat"),
         "Rep" = c("Lean Republican", "Not very strong Republican", "Strong Republican"),
-        "Ind" = "Independent")
-  )
+        "Ind" = "Independent"))
+
+write_rds(sav, here("data", "evidence-sav.rds"))
 
 # long format for easier analysis (should be in analysis script)
 long <- sav |> 
@@ -59,7 +60,7 @@ long <- sav |>
   mutate(
     proice = case_when(
       question %in% c("good_obey", "ice_mn_killing_invest", "supp_abolishice") ~ 
-        replace_values(response, "Yes" ~ "No", "No" ~ "Yes"),
+        case_match(response, "Yes" ~ "No", "No" ~ "Yes", "Not sure" ~ "Not sure"),
       TRUE ~ response)
   )
 
@@ -76,28 +77,3 @@ long |>
   mutate(effect = `TRUE` - `FALSE`) |> 
   select(question, pid3lean, effect) |> 
   pivot_wider(names_from = pid3lean, values_from = effect)
-  
-  
-  
-  
-    
-
-  pivot_longer(cols = all_of(vars), #pivoting longer for easier analysis
-               names_to = "question",
-               values_to = "response") |> 
-  mutate(question = fct_relevel(question, rev(vars))) 
-
-write_rds(evidence, here("data", "evidence-cleaned.rds"))
-
-#randomization/control check
-check <- evidence |> 
-  mutate(rep = case_when(pid7_baseline %in% c(1, 2, 3) ~ "Dem",
-                         pid7_baseline%in% c(5, 6, 7) ~ "Rep"),
-         saw= as.numeric(saw_ice_video == 1))
-
-#how well did we randomize for saw_ice_video? Significant diff. in exposure to the video (Treatment 79%, control 73%)?
-t.test(check$saw ~ check$ICE_Video)
-#are saw_ice_video and party correlated? Significant diff. in exposure to video (Dem 81%, Rep 74%)
-t.test(check$saw ~ check$rep)
-#how well did we randomize for party? Sliiiightly significant difference (Dem 47% treated, Rep 49% treated). Would not worry about this one.
-t.test(check$ICE_Video ~ check$rep)

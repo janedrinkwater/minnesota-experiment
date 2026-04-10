@@ -36,7 +36,7 @@ pid_direction <- evidence |>
 
 ggplot(pid_direction, aes(x = estimate, y = question, color = pid)) +
   geom_point(size = 3,
-             position = position_dodge(width = 0.6),) +
+             position = position_dodge(width = 0.6)) +
   geom_errorbarh(aes(xmin = conf.low, xmax = conf.high),
                  height = 0.2,
                  position = position_dodge(width = 0.6),) +
