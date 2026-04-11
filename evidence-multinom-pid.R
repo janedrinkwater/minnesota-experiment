@@ -30,13 +30,13 @@ diff_results <- long |>
   pivot_wider(names_from = proice,
               values_from = p) 
 
-#significance
+#significance - experimenting, hoping to find a simpler way?
 significance_tests <- long |> 
   filter(complete.cases(pid3lean, proice),
          pid3lean %in% c("Rep", "Dem")) |>
   group_by(question, pid3lean) |> 
   summarise(
-    # Get counts for each group
+    # Counts for each group
     n_yes_treatment = sum(proice == "Yes" & treatment == TRUE),
     n_yes_control = sum(proice == "Yes" & treatment == FALSE),
     n_no_treatment = sum(proice == "No" & treatment == TRUE),
@@ -50,7 +50,7 @@ significance_tests <- long |>
     p_no_treatment = n_no_treatment / n_treatment,
     p_no_control = n_no_control / n_control,
     
-    # Your difference effect
+    # Difference effect
     diff_effect = (p_yes_treatment - p_no_treatment) - (p_yes_control - p_no_control),
     
     # Standard errors for each proportion
@@ -132,7 +132,8 @@ diff_results |>
          size = "none") +
   labs(
     title = "Treatment effect on uncertainty by party",
-    subtitle = "Difference in % uncertain (treatment - control) by partisanship",
+    subtitle = "% of treatment vs. control group who say 'not sure', by party",
+    caption = "Arrow starts at control and ends at treatment. Number reports effect size.",
     x = NULL,
     y = NULL,
     shape = NULL,
@@ -141,7 +142,8 @@ diff_results |>
   theme_minimal() +
   theme(legend.position = "top",
         panel.grid.minor.x = element_blank(),
-        panel.grid.major.y = element_blank())
+        panel.grid.major.y = element_blank(),
+        plot.caption = element_text(hjust = 0, face = "italic", size = 8))
 
 #same thing but with difference
 diff_results |> 
@@ -168,9 +170,9 @@ diff_results |>
   geom_vline(xintercept = 0) +
   labs(
     title = "Treatment effect on ICE support by party",
-    subtitle = "Treatment effect (treatment - control) on % support - % oppose",
+    subtitle = "% support ICE - % oppose ICE in treatment & control groups, by party",
     x = "#",
-    caption = "Arrow starts at control and ends at treatment. Direction: effect direction. Length: effect size",
+    caption = "Arrow starts at control & ends at treatment. Direction: effect direction. Label: effect size.",
     y = NULL,
     shape = NULL,
     size = NULL,
